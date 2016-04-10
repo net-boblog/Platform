@@ -82,7 +82,7 @@ public class RoleAction extends BaseAction{
 	@RequestMapping("/system_getRoleTree.pt")
 	public String getRoleTree(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 		List list = roleService.getRoleTree();
-		List<TreeNodes> newlist=CommonUtil.getTreeList(list, "01",false);
+		List<TreeNodes> newlist=CommonUtil.getTreeList(list, "01",true);
 		String treeList = JSON.toJSONString(newlist, true);
 		resp.setContentType("text/html;charset=UTF-8");   
 		resp.getWriter().write(treeList);
