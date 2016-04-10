@@ -20,6 +20,8 @@
 		<div id="win" class="easyui-window" title="请选择角色"    
 	        data-options="minimizable:false,closable:false,collapsible:false"> 
 	        <form id="s_form" method="post"> 
+	        <input id="orgname" name="orgname" type="hidden" />
+
 	        	<div id="tt" class="easyui-tabs">
 		        	<#if obj.superrole?exists || obj.adminrole?exists>
 		        		 <div title="管理角色">
