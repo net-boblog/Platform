@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="login">
+	<!-- cache 
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" />-->
+
+	<select id="getUserInfo" parameterType="map" resultType="map">
+		select u.*,
+		       (select distinct ru.role_type
+		          from cy_sys_role_user ru
+		         where ru.user_id = u.id
+		           and ru.role_type = 'superRole') as superRole,
+		       (select distinct ru.role_type
+		          from cy_sys_role_user ru
+		         where ru.user_id = u.id
+		           and ru.role_type = 'adminRole') as adminRole,
+		       (select distinct ru.role_type
+		          from cy_sys_role_user ru
+		         where ru.user_id = u.id
+		           and ru.role_type = 'busiRole') as busiRole
+		  from cy_sys_user u
+		 where 1 = 1
+
+		<if test="account !=null and account !='' "> and u.account = #{account}</if>
+		<if test="password !=null and password !='' "> and u.password = #{password}</if>
+	</select>
+	
+	<select id="queryAdminRole" parameterType="map" resultType="map">
+		select r.id, r.name
+		  from cy_sys_role r, cy_sys_role_user u
+		 where r.id = u.role_id and r.type != 'busiRole'
+		 <if test="_userid !=null and _userid !='' "> and u.user_id = #{_userid}</if>
+	</select>
+	
+	<select id="queryOrgUnit" parameterType="map" resultType="map">
+		select ou.id,
+	       (select org.name from cy_sys_org_unit org where org.type = 'center') || '->' ||
+	       ou.name as name
+			  from cy_sys_user u, cy_sys_org_unit ou, cy_sys_org_unit_user ouu
+			 where ouu.org_id = ou.id
+			   and ouu.user_id = u.id
+			    <if test="_userid !=null and _userid !='' "> and u.id = #{_userid}</if>
+			   and ou.type = 'unit'
+			 order by ouu.id asc
+	</select>
+	
+	<select id="queryBusiRole" parameterType="map" resultType="map">
+		select r.id, r.name
+		  from cy_sys_org_unit      ou,
+		       cy_sys_role_org_unit rou,
+		       cy_sys_role          r,
+		       cy_sys_role_user     ru
+		 where r.id = rou.role_id
+		   and r.id = ru.role_id
+		   and ou.id = rou.org_id
+		   and r.type = #{type}
+		   <if test="_userid !=null and _userid !='' "> and ru.user_id = #{_userid}</if>
+		   <if test="_orgid !=null and _orgid !='' "> and ou.id = #{_orgid}</if>
+	</select>
+	
+	<select id="queryRoleType" parameterType="map" resultType="map">
+	    select (select distinct ru.role_type
+	              from cy_sys_role_user ru
+	             where ru.user_id = u.id
+	               and ru.role_type = 'superRole') as superRole,
+	           (select distinct ru.role_type
+	              from cy_sys_role_user ru
+	             where ru.user_id = u.id
+	               and ru.role_type = 'adminRole') as adminRole,
+	           (select distinct ru.role_type
+	              from cy_sys_role_user ru
+	             where ru.user_id = u.id
+	               and ru.role_type = 'busiRole') as busiRole
+	      from cy_sys_user u
+	     where 1 = 1
+		   <if test="_userid !=null and _userid !=''"> and u.id = #{_userid}</if>
+	</select>
+	
+</mapper>

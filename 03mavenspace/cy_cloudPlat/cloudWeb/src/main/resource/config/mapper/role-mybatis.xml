@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="role">
+	<!-- cache 
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" />-->
+
+	<select id="queryBusiRole" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				   select r.id, r.name, r.remark
+					  from cy_sys_role r,cy_sys_role_org_unit u
+					 where u.role_id = r.id and r.type = 'busiRole'
+					 and u.org_id = #{_orgid}
+					 order by r.id desc
+			   </when>
+			   <otherwise>
+				    select r.id, r.name, r.remark
+					  from cy_sys_role r
+					 where r.type in
+					 <foreach item="types" collection="type" open="(" separator="," close=")">
+							#{types}
+				    </foreach>
+					 order by r.id desc
+			   </otherwise>
+	    </choose>
+	</select>
+	
+	<select id="getSuperRole" parameterType="map" resultType="map">
+		select r.id,r.rolename,r.roletype,r.remark from cy_sys_role r where r.roletype = 'superRole' and r.locked = '0'
+	</select>
+	
+	<select id="getRoleInfo" parameterType="map" resultType="map">
+		select r.id,r.name,r.type,r.remark from cy_sys_role r where  r.locked = '0'
+	     <if test="roleId!=null">
+			and r.id = #{roleId}
+		 </if>
+	</select>
+	
+	<select id="getRoleTree" parameterType="map" resultType="map">
+		select temp.*
+			   from (select r.id, r.name as text, r.parent_id
+			          from cy_sys_role r
+			         where r.type = 'adminRole'
+			        union all
+			        select t.id, t.name as text, t.parent_id
+			          from cy_sys_role t
+			         where 1 = 1
+			           and t.id = (select distinct ro.parent_id
+			                         from cy_sys_role ro
+			                        where ro.type = 'adminRole')) temp
+			 order by temp.id asc
+	</select>
+	
+	<select id="getSuperRoleTree" parameterType="map" resultType="map">
+		select r.id,r.name as text,r.parent_id from cy_sys_role r where 1 = 1 and r.type = 'superRole' order by r.id asc
+	</select>
+	
+	<insert id="saveRole" parameterType="map">
+		insert into cy_sys_role
+		(id, name, parent_id,type,remark,locked,entityid)
+		values
+		(#{id},#{rolename},#{parentId},#{type},#{remark},'0','')
+	</insert>
+	
+	<delete id="delRole" parameterType="map">
+		delete cy_sys_role r where r.id = #{id}
+	</delete>
+	
+	<insert id="saveOrgRole" parameterType="map">
+		insert into cy_sys_role_org_unit (id, role_id,org_id) values (#{id},#{roleId},#{orgId})
+	</insert>
+	
+</mapper>

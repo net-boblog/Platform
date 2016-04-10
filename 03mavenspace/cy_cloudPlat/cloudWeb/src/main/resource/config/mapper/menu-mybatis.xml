@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="menu">
+	<!-- cache 
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" />-->
+
+	<select id="menuTree" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				  select temp.*, rf.id as relateid
+					  from (select f.id, f.name as text, f.parent_id, f.sortno
+					          from cy_sys_menu f
+					         where f.menu_type != '1') temp
+					  left join cy_sys_role_menu rf on rf.menu_id = temp.id
+					  <if test="roleId!=null">and rf.role_id = #{roleId}</if>
+					  <if test="roleId==null">and rf.role_id = #{_roleid}</if>
+					  order by temp.sortno asc
+			   </when>
+			   <otherwise>
+				    select f.id, f.name as text, f.parent_id, rf.id as relateid
+					  from cy_sys_menu f
+					  left join cy_sys_role_menu rf on rf.menu_id = f.id
+					  <if test="roleId!=null">and rf.role_id = #{roleId}</if>
+					  <if test="roleId==null">and rf.role_id = #{_roleid}</if>
+					 order by f.sortno asc
+			   </otherwise>
+	    </choose>
+	</select>
+	
+	<select id="getMenuInfo" parameterType="map" resultType="map">
+		select * from cy_sys_menu m where 1 = 1 
+		<if test="id!=null">and m.id = #{id}</if>
+	</select>
+	
+	<insert id="saveMenu" parameterType="map">
+		insert into cy_sys_menu
+		(id, name, parent_id,url,leaf,sortno,remark,status)
+		values
+		(#{id},#{name},#{parentid},#{url},#{leaf},#{sortno},#{remark},#{status})
+	</insert>
+	
+	<delete id="delMenu" parameterType="map">
+		delete cy_sys_menu m where m.id = #{id}
+	</delete>
+	
+	<update id="updateMenu" parameterType="map">
+		update cy_sys_menu m
+		set 
+			m.name = #{name},
+			m.parent_id = #{parentid},
+			m.url = #{url},
+			m.leaf = #{leaf},
+			m.sortno = #{sortno},
+			m.remark = #{remark},
+			m.status = #{status}
+		where m.id = #{id}
+	</update>
+	
+	<delete id="delRoleMenu" parameterType="map">
+		delete cy_sys_role_menu m where m.id in 
+		<foreach item="ids" collection="param" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+	
+	<insert id="saveMenuRole" parameterType="map">
+		insert into cy_sys_role_menu (id, role_id,menu_id) values (#{id},#{roleId},#{menuId})
+	</insert>
+	
+</mapper>

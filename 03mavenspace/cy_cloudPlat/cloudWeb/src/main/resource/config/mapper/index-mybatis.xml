@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="index">
+
+	<select id="menuList" parameterType="map" resultType="map">
+		select distinct m.sortno,
+                m.id,
+                m.id as menu_id,
+                m.name,
+                m.parent_id,
+                m.url,
+                m.leaf
+			  from cy_sys_menu m,cy_sys_role_menu r
+			 where m.id = r.menu_id
+			  <if test="_roletype!=null and _roletype=='busiRole'">and m.parent_id = '02' and r.role_id = #{_roleid}</if>
+			  <if test="_roletype!=null and _roletype=='adminRole'">and m.parent_id = '01' and r.role_id = #{_roleid}</if>
+			  <if test="_roletype!=null and _roletype=='superRole'">and m.parent_id = '01'</if>
+			 order by m.sortno asc
+	</select>
+	
+	<select id="navList" parameterType="map" resultType="map">
+		<if test="_roletype!=null and _roletype=='superRole'">
+			select  m.sortno,
+	                m.id,
+	                m.id as menu_id,
+	                m.name,
+	                m.parent_id,
+	                m.url,
+	                m.leaf
+			  from cy_sys_menu m
+			 where 1 = 1 
+	 		 <if test="parentid!=null">
+				and m.parent_id = #{parentid}
+			 </if>
+			 order by m.sortno asc
+		</if>
+		
+		<if test="_roletype!=null and (_roletype=='adminRole' or _roletype=='busiRole')">
+			select  m.sortno,
+	                m.id,
+	                m.id as menu_id,
+	                m.name,
+	                m.parent_id,
+	                m.url,
+	                m.leaf
+			  from cy_sys_menu m, cy_sys_role_menu rm
+			 where m.id = rm.menu_id 
+	 		 <if test="parentid!=null">
+				and m.parent_id = #{parentid}
+			 </if>
+			 <if test="_roleid!=null">
+				and rm.role_id = #{_roleid}
+			 </if>
+			 order by m.sortno asc
+		</if>
+	</select>
+	
+	<select id="getOrgAndRole" parameterType="map" resultType="map">
+		select temp1.*, temp2.entity_id,temp2.orgname
+		  from (select r.*, ru.user_id
+		          from cy_sys_role r, cy_sys_role_user ru
+		         where r.id = ru.role_id
+		         <if test="_userid!=null">
+					and ru.user_id = #{_userid}
+				 </if>
+ 		         <if test="roleId!=null">
+					and ru.role_id = #{roleId}
+				 </if>
+		           ) temp1
+		  left join (select u.entity_id,u.name as orgname,uu.user_id, u.id as org_id
+		               from cy_sys_org_unit u, cy_sys_org_unit_user uu
+		              where u.id = uu.org_id  		         
+		              <if test="orgId!=null">
+						and u.id = #{orgId}
+					 </if>
+		             ) temp2 on temp2.user_id = temp1.user_id
+	</select>
+	
+	<select id="getMenu" parameterType="map" resultType="map">
+		select m.* from cy_sys_menu m where 1 = 1 
+		<if test="id!=null">and m.id = #{id}</if>
+	</select>
+	
+</mapper>

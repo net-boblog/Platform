@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="orgUnit">
+	<!-- cache 
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" />-->
+
+	<select id="orgUnitTree" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				   select temp.*, ou.id as relateid
+					  from (select u.id, u.name as text, u.parent_id
+					          from cy_sys_org_unit u, cy_sys_org_unit_user ouu
+					         where u.id = ouu.org_id
+         				    <if test="_userid!=null">
+								and ouu.user_id = #{_userid}
+						    </if>
+					        union
+					        select u.id, u.name as text, u.parent_id
+					          from cy_sys_org_unit u
+					         where u.type = 'center') temp
+					  left join cy_sys_role_org_unit ou on ou.org_id = temp.id
+                      <if test="roleId!=null">and ou.role_id = #{roleId}</if>
+			          <if test="roleId==null">and ou.role_id = #{_roleid}</if>
+			   </when>
+			   
+			   <otherwise>
+				    select u.id, u.name as text, u.parent_id, ou.id as relateid
+					  from cy_sys_org_unit u
+					  left join cy_sys_role_org_unit ou on ou.org_id = u.id
+					  <if test="roleId!=null">and ou.role_id = #{roleId}</if>
+			          <if test="roleId==null">and ou.role_id = #{_roleid}</if>
+					 order by u.sortno asc
+			   </otherwise>
+	    </choose>
+	</select>
+	
+	<insert id="saveOrgUnit" parameterType="map">
+		insert into cy_sys_org_unit
+		(id, name, parent_id,sortno,remark,enabled,type,entity_id)
+		values
+		(#{id},#{name},#{parentid},#{sortno},#{remark},#{enabled},#{type},#{entityId})
+	</insert>
+	
+	<update id="updateMenu" parameterType="map">
+		update cy_sys_org_unit u
+		set 
+			u.name = #{name},
+			u.sortno = #{sortno},
+			u.remark = #{remark},
+			u.enabled = #{enabled},
+			u.remark = #{remark}
+		where u.id = #{id}
+	</update>
+	
+	<select id="getOrgUnit"  parameterType="map" resultType="map">
+		select * from cy_sys_org_unit u where 1 = 1 
+		<if test="id!=null">and u.id = #{id}</if>
+	</select>
+	
+	<delete id="delOrgUnit" parameterType="map">
+		delete cy_sys_org_unit u where u.id = #{id}
+	</delete>
+	
+	<select id="getEntityId"  resultType="map">
+		select MAX(u.entity_id) entityId from cy_sys_org_unit u
+	</select>
+	
+	<delete id="delOrgRole" parameterType="map">
+		delete cy_sys_role_org_unit u where u.id in 
+		<foreach item="ids" collection="param" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+	
+	<insert id="saveOrgRole" parameterType="map">
+		insert into cy_sys_role_org_unit (id, role_id,org_id) values (#{id},#{roleId},#{orgId})
+	</insert>
+	
+</mapper>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD iBatis Mapper 3.0 //EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="user">
+	<!-- cache 
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" readOnly="true" />-->
+
+	<select id="queryUser" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				   select t.* from cy_sys_user t 
+				   <if test="_orgid!=null">
+					   ,cy_sys_org_unit_user u
+				   </if>
+				   where 1 = 1 
+				   <if test="_orgid!=null">
+						and u.user_id = t.id and u.org_id = #{_orgid}
+					</if>
+			   </when>
+			   <otherwise>
+				    select * from cy_sys_user t where 1 = 1
+			   </otherwise>
+	    </choose>
+   		<if test="account!=null and account!=''">and t.account like #{account}</if>
+ 		<if test="username!=null and username!=''">and t.username like #{username}</if>
+		order by t.id desc
+	</select>
+	
+	<select id="getUserInfo" parameterType="map" resultType="map">
+	    select *　from cy_sys_user t where 1 = 1 <if test="id !=null">and t.id = #{id}</if>
+	</select>
+	
+	<select id="getActiveInfo" parameterType="map" resultType="map">
+	    select *　from cy_sys_user t where 1 = 1 <if test="_userid !=null">and t.id = #{_userid}</if>
+	</select>
+	
+	<select id="queryUserByRole" parameterType="map" resultType="map">
+		select u.*, r.id as rid
+			  from cy_sys_user u, cy_sys_role_user r
+			 where u.id = r.user_id
+			 <if test="roleId !=null"> and r.role_id = #{roleId}</if>
+			 order by u.id desc
+	</select>
+	
+	<select id="queryOtherUser" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				   select t.*
+						  from cy_sys_user t
+						  <if test="_orgid!=null"> ,cy_sys_org_unit_user u</if>
+						  where 1 = 1
+	   				      <if test="_orgid!=null"> and t.id = u.user_id and u.org_id = #{_orgid}</if>
+						  and t.id not in (select u.id
+						                      from cy_sys_user u, cy_sys_role_user ur
+						                      <if test="_orgid!=null"> ,cy_sys_org_unit_user us</if>
+						                     where ur.user_id = u.id
+						                     <if test="_orgid!=null"> and us.user_id = u.id and us.org_id = #{_orgid}</if>
+						                     <if test="roleId!=null">and ur.role_id = #{roleId}</if>
+						   )
+
+			   </when>
+			   <otherwise>
+				    select t.*
+							  from cy_sys_user t
+							  where t.id not in (select u.id
+							                      from cy_sys_user u, cy_sys_role_user ur
+							                     where ur.user_id = u.id
+							                     <if test="roleId!=null">and ur.role_id = #{roleId}</if>
+							  )
+			   </otherwise>
+	    </choose>
+	    <if test="account!=null">and t.account like #{account}</if>
+ 		<if test="username!=null">and t.username like #{username}</if>
+	</select>
+	
+	<insert id="saveUserRole" parameterType="map">
+		insert into cy_sys_role_user
+		(id, user_id, role_id,role_type)
+		values
+		(#{id},#{userId},#{roleId},#{roleType})
+	</insert>
+	
+	<delete id="delUserRole" parameterType="map">
+		delete cy_sys_role_user r where r.id in 
+		<foreach item="ids" collection="param" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+	
+	<select id="queryUserByOrgUnit" parameterType="map" resultType="map">
+		select u.*, ou.id as rid
+			  from cy_sys_user u, cy_sys_org_unit_user ou
+			  where u.id = ou.user_id
+			  <if test="orgId !=null"> and ou.org_id = #{orgId}</if>
+			 order by u.id desc
+	</select>
+	
+	<select id="queryOtherOrgUser" parameterType="map" resultType="map">
+	    <choose>
+			  <when test="_roletype !=null and _roletype=='adminRole'">
+				   select t.*
+						  from cy_sys_user t
+						 where 1 = 1
+						    <if test="_entityid!=null">and (t.entityId =#{_entityid} or t.entityId='0')</if>
+						   and t.id not in (select u.id
+						                      from cy_sys_user u, cy_sys_org_unit_user ou
+						                     where ou.user_id = u.id
+						                       <if test="orgId!=null">and ou.org_id = #{orgId}</if>
+						   )
+
+			   </when>
+			   <otherwise>
+				   select t.*
+					  from cy_sys_user t
+					 where t.id not in (select u.id
+					                      from cy_sys_user u, cy_sys_org_unit_user ou
+					                      where ou.user_id = u.id
+							              <if test="orgId!=null">and ou.org_id = #{orgId}</if>
+							  )
+			   </otherwise>
+	    </choose>
+	    <if test="account!=null">and t.account like #{account}</if>
+ 		<if test="username!=null">and t.username like #{username}</if>
+	</select>
+	
+	<insert id="saveOrgUnitUser" parameterType="map">
+		insert into cy_sys_org_unit_user
+		(id, org_id, user_id)
+		values
+		(#{id},#{orgId},#{userId})
+	</insert>
+	
+	<delete id="delOrgUnitUser" parameterType="map">
+		delete cy_sys_org_unit_user u where u.id in 
+		<foreach item="ids" collection="param" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+	
+	<insert id="saveUser" parameterType="map">
+		insert into cy_sys_user
+		(id, username,account,password,sex,locked,remark,enabled,email,phone,caid,entityId)
+		values
+		(#{id},#{username},#{account},#{password},#{sex},#{locked},#{remark},#{enabled},#{email},#{phone},#{caid},#{_entityid,jdbcType=VARCHAR})<!-- 插入空值必须指定JDBC类型 -->
+	</insert>
+	
+	<update id="updateUser" parameterType="map">
+		update cy_sys_user u
+			set 
+				u.username = #{username},
+				u.account = #{account},
+				u.password = #{password},
+				u.sex = #{sex},
+				u.remark = #{remark},
+				u.enabled = #{enabled},
+				u.email = #{email},
+				u.phone = #{phone},
+				u.caid = #{caid},
+				u.entityId = #{_entityid}
+			where u.id = #{id}
+	</update>
+	
+	<delete id="delUser" parameterType="map">
+		delete cy_sys_user u where u.id in 
+		<foreach item="ids" collection="param" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+	
+	<update id="updateStatus" parameterType="map">
+		update cy_sys_user u
+			set 
+				u.enabled = #{enabled}
+			where u.id = #{id}
+	</update>
+	
+	<update id="updateLock" parameterType="map">
+		update cy_sys_user u
+			set 
+				u.locked = #{locked}
+			where u.id = #{id}
+	</update>
+	
+</mapper>
