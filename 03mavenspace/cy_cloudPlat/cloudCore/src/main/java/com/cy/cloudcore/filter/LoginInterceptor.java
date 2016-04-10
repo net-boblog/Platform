@@ -10,7 +10,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.cy.cloudcore.common.SessionContainer;
-import com.cy.cloudcore.constants.Constants;
 import com.cy.cloudcore.constants.SessionConstants;
 
 public class LoginInterceptor extends HandlerInterceptorAdapter{
@@ -21,12 +20,9 @@ public class LoginInterceptor extends HandlerInterceptorAdapter{
 	
 	 public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {
 		 HttpSession session = req.getSession(true); 
-		 String bb = SessionConstants.SESSION_CONTAINER;
 		 SessionContainer sessionContainer = (SessionContainer) session.getAttribute(SessionConstants.SESSION_CONTAINER);
 		 String path = req.getScheme() +"://" + req.getServerName()+ ":" +req.getServerPort() + req.getServletContext().getContextPath();
-		 String aa = path+LOGIN_URL;
 		 if(sessionContainer == null){
-            //log.info("Interceptor：跳转到login页面！");  
             res.sendRedirect(path+LOGIN_URL);
             return false;  
 		 }
