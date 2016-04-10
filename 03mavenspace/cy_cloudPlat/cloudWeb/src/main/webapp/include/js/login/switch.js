@@ -113,7 +113,8 @@ function login(roleType) {
 		if(roleId == null || roleId == "" || typeof(roleId) == undefined){
 			$("#msg").show();
 		}else{
-			url = path+"/main/index_indexInit.pt?roleId="+roleId+"&orgId="+orgId+"&orgname="+orgname;
+			$("#orgname").val(orgname);
+			url = path+"/main/index_indexInit.pt?roleId="+roleId+"&orgId="+orgId;
 			$('#s_form').attr("action", url).submit();;  
 		}
 	}else if(roleType =='adminRole'){
