@@ -123,7 +123,7 @@ function login(roleType) {
 		$('#s_form').attr("action", url).submit();;  
 	}else{
 		roleId = $('#adminRole').combobox('getValue');
-		url = path+"/main/index_indexInit.pt?roleId="+roleId+"&orgId=";  
+		url = path+"/main/index_indexInit.pt?roleId="+roleId;  
 		$('#s_form').attr("action", url).submit();
 	}
 }
