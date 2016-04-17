@@ -9,7 +9,7 @@
     <version>0.0.1-SNAPSHOTPLAT</version>
   </parent>
   
-  <groupId>com.cy</groupId>
+  <groupId>com.cy.cloudWeb</groupId>
   <artifactId>cloudWeb</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
@@ -24,11 +24,20 @@
       <scope>test</scope>
     </dependency>
     
+    <!-- 引入核心模块 -->
     <dependency>
-      <groupId>com.cy</groupId>
+      <groupId>com.cy.cloudCore</groupId>
       <artifactId>cloudCore</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
+     <!-- web合并必须配置依赖 -->  
+     <dependency>  
+         <groupId>com.cy.cloudComponent</groupId>  
+         <artifactId>cloudComponent</artifactId>  
+         <version>0.0.1-SNAPSHOTCOMPONENT</version>  
+         <type>war</type>  
+     </dependency>  
   </dependencies>
   
   <build>
@@ -45,6 +54,22 @@
 				<target>1.7</target>
 			</configuration>
 		</plugin>
+		
+		<!-- 合并多个war -->  
+        <plugin>  
+            <groupId>org.apache.maven.plugins</groupId>  
+            <artifactId>maven-war-plugin</artifactId>  
+            
+            <configuration>  
+                <packagingExcludes>WEB-INF/web.xml</packagingExcludes>    
+                <overlays>  
+                    <overlay>  
+                        <id>com.cy.cloudComponent</id>  
+                        <targetPath>cloudComponent</targetPath>  
+                    </overlay>  
+                </overlays>  
+            </configuration>  
+        </plugin>  
 	</plugins>
 	
   </build>
