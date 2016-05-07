@@ -7,14 +7,11 @@
         <dependent-module archiveName="cloudCore-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cloudCore/cloudCore">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/" handle="module:/overlay/prj/cloudComponent?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
-            <dependency-type>consumes</dependency-type>
-        </dependent-module>
-        <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
-            <dependency-type>consumes</dependency-type>
+        <dependent-module archiveName="cloudComponent-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cloudComponent/cloudComponent">
+            <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/cloudWeb/src/main/webapp/WEB-INF/classes"/>
         <property name="context-root" value="cloudWeb"/>
-        <property name="component.exclusion.patterns" value="WEB-INF/web.xml"/>
+        <property name="component.exclusion.patterns"/>
     </wb-module>
 </project-modules>

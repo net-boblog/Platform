@@ -120,7 +120,13 @@
     
     <!-- FreeMarker Configuration -->     
     <bean id="freemarkerConfig"  class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">  
-        <property name="templateLoaderPath" value="/WEB-INF/view/"/>  
+        <property name="templateLoaderPaths"> 
+        	<list>
+        		<value>classpath:com/cy/cloudweb/view/</value>
+        		<value>classpath:com/cy/cloudcomponent/view/</value>
+        		<value>classpath:com/cy/clouddata/view/</value>
+        	</list>
+        </property>
          <property name="freemarkerVariables">
              <map>
                 <entry key="xml_escape" value-ref="fmXmlEscape"/>
